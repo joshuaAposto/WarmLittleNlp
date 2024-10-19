@@ -1257,7 +1257,7 @@ app.get('/spamshare', async (req, res) => {
         return res.status(400).json({
             error: 'All fields are required',
             example: {
-                state: "[YOUR_STATE_DATA]",
+                state: "APPSTATE MO",
                 url: "https://www.facebook.com/100076001623455/posts/560975206445862/?mibextid=ll2B9VHE4nSh4fV0",
                 quantity: "1000000",
                 delay: "1"
