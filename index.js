@@ -1125,12 +1125,14 @@ app.get('/blackbox/model/gemini-pro', async (req, res) => {
       }
     });
 
-    res.json({ response: response.data });
+    const cleanedResponse = response.data.replace(/\$@\$\w+=undefined-rv1\$@\$/g, '');
+    res.json({ response: cleanedResponse });
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch data from Blackbox AI' });
   }
 });
 
+//claude
 app.get('/blackbox/model/claude-sonnet-3.5', async (req, res) => {
   const { prompt } = req.query;
 
@@ -1173,7 +1175,8 @@ app.get('/blackbox/model/claude-sonnet-3.5', async (req, res) => {
       }
     });
 
-    res.json({ response: response.data });
+    const cleanedResponse = response.data.replace(/\$@\$\w+=undefined-rv1\$@\$/g, '');
+    res.json({ response: cleanedResponse });
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch data from Blackbox AI' });
   }
