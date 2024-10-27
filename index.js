@@ -1288,39 +1288,37 @@ app.get('/spamshare', async (req, res) => {
     }
 });
 
-//snaptik
+//tiktok dl
 app.get('/tikdl', async (req, res) => {
-    const videoUrl = req.query.url;
-    const token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpbWFnZV91cmxzIjpbImh0dHBzOi8vZC5yYXBpZGNkbi5hcHAvZD90b2tlbj1leUowZVhBaU9pSktWMVFpTENKaGJHY2lPaUpJVXpJMU5pSjkuZXlKMWNtd2lPaUpvZEhSd2N6b3ZMM0F4TmkxemFXZHVMWE5uTG5ScGEzUnZhMk5rYmk1amIyMHZkRzl6TFdGc2FYTm5MV2t0Y0dodmRHOXRiMlJsTFhObkx6WmxNMlkxWVRRd1l6VmlNalJoTjJaaU16WTFZVGMyT0dWaFl6aGhPRGswZm5Sd2JIWXRjR2h2ZEc5dGIyUmxMV2x0WVdkbExXNWxkeTFzY1dWdU9uRTRNQzVxY0dWblAyUnlQVEV3T0RJMUptNXZibU5sUFRVNE9Ua3hKbkpsWm5KbGMyaGZkRzlyWlc0OU4yTTRNemd4TURFeFltUmhObUl3WkdFNU9XWm1ZVE5tTlRRek1XTmxORGdtZUMxbGVIQnBjbVZ6UFRFM016RXlOVGd3TURBbWVDMXphV2R1WVhSMWNtVTlXbmhsTm10eVlXSTVkREpGY3pZNFZIWk1jVmwyUkVOTk4yaDNKVE5FSm1KcGVsOTBZV2M5ZEhSZmNHaHZkRzl0YjJSbEptbGtZejF0WVd4cGRtRW1jSE05TWpoalpqaGhZemNtY3oxQlYwVk5SVjlFUlZSQlNVd21jMk05YVcxaFoyVW1jMmhqY0QweFpERmhPVGRtWXlaemFIQTlaREExWWpFMFltUW1kRDAxT0RrM1pqZGxZeUlzSW1acGJHVnVZVzFsSWpvaVUyNWhjSFJwYXk1aGNIQmZOelF5TmprMk1Ua3pPRGc1TWpBNE1qUTBNREl1YW5Cbklpd2laWGh3SWpveE56STVPVFk0TkRreWZRLkN6Z19PSEJ0Z2ctc3YwOHE2dldGTXJUNFRtYzY2U3poY05zYVFocVU5dTAmZGw9MSJdLCJhdWRpb191cmwiOiJodHRwczovL3NmMTYtaWVzLW11c2ljLXNnLnRpa3Rva2Nkbi5jb20vb2JqL3Rpa3Rvay1vYmovNzQxMzcyNDM0MzU2MTA5NTkzNy5tcDMiLCJpZCI6Ijc0MjY5NjE5Mzg4OTIwODI0NDAiLCJmaWxlbmFtZSI6IlNuYXBUaWtfQXBwXzc0MjY5NjE5Mzg4OTIwODI0NDAubXA0In0.NACszH5ct661CofBWq5Eb0nJir4AnHWbEiiBwCKbRHY";
-
+    const { link } = req.query;
+    const url = "https://tiktokio.com/api/v1/tk-htmx";
+    
+    const data = new URLSearchParams({
+        prefix: 'dtGslxrcdcG9raW8uY29t',
+        vid: link
+    });
+    
+    const headers = {
+        'HX-Request': 'true',
+        'HX-Trigger': 'search-btn',
+        'HX-Target': 'tiktok-parse-result',
+        'HX-Current-URL': 'https://tiktokio.com/',
+        'Content-Type': 'application/x-www-form-urlencoded'
+    };
+    
     try {
-        const renderUrl = `https://snaptik.app/render.php?token=${token}`;
-        const renderResponse = await axios.get(renderUrl);
-
-        if (renderResponse.status === 200) {
-            const taskId = renderResponse.data.task_id;
-
-            const taskUrl = `https://snaptik.app/task.php?token=${taskId}`;
-            let progress = 0;
-
-            while (progress < 100) {
-                const taskResponse = await axios.get(taskUrl);
-                if (taskResponse.status === 200) {
-                    progress = taskResponse.data.progress;
-
-                    if (progress === 100) {
-                        const downloadUrl = taskResponse.data.download_url;
-                        return res.json({ downloadUrl });
-                    }
-                }
-
-                await new Promise(resolve => setTimeout(resolve, 2000));
-            }
-        } else {
-            return res.status(500).json({ error: "Failed to render video." });
-        }
+        const response = await axios.post(url, data, { headers });
+        const $ = cheerio.load(response.data);
+        
+        const downloadLinks = [];
+        $('a[href*="download"]').each((_, element) => {
+            downloadLinks.push($(element).attr('href'));
+        });
+        
+        res.setHeader('Content-Type', 'application/json');
+        res.send(JSON.stringify({ download_links: downloadLinks }, null, 4));
     } catch (error) {
-        return res.status(500).json({ error: error.message });
+        res.status(500).json({ error: 'Failed to fetch download links' });
     }
 });
 
