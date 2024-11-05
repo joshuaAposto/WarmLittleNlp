@@ -1327,6 +1327,48 @@ app.get('/tikdl', async (req, res) => {
     }
 });
 
+//pinoygpt
+app.get('/pinoygpt', async (req, res) => {
+    const { prompt } = req.query;
+    const chatUrl = 'https://www.pinoygpt.com/wp-json/mwai-ui/v1/chats/submit';
+
+    const requestData = {
+        botId: 'default',
+        customId: null,
+        chatId: '10nyqgp526h',
+        contextId: 12,
+        newMessage: prompt,
+        newFileId: null,
+        stream: true
+    };
+
+    const headers = {
+        'Content-Type': 'application/json',
+        'X-WP-Nonce': '36f78b972a',
+        'Accept': 'text/event-stream'
+    };
+
+    try {
+        const response = await axios.post(chatUrl, requestData, { headers, responseType: 'stream' });
+        let burat_ni_ley = '';
+
+        response.data.on('data', (chunk) => {
+            const chunkData = chunk.toString().replace('data: ', '');
+            const lineData = JSON.parse(chunkData);
+
+            if (lineData.type === 'live') {
+                burat_ni_ley += lineData.data;
+            } else if (lineData.type === 'end') {
+                const finalData = JSON.parse(lineData.data);
+                burat_ni_ley += finalData.reply;
+                res.json({ message: burat_ni_ley });
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch response' });
+    }
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
